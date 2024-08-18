@@ -47,24 +47,12 @@ export const processFile = actionClient
     async ({
       parsedInput: { file, startDate, endDate, startTime, endTime, avgPerDate },
     }) => {
-      console.log("startDate", startDate);
-      console.log(
-        "startDate modified",
-        startDate?.toISOString().replace(".000Z", ""),
-      );
-      console.log("endDate", endDate);
-      console.log(
-        "endDate modified",
-        endDate?.toISOString().replace(".000Z", ""),
-      );
       const withDateRange = startDate && endDate;
       const jsonData = await parseSpreadsheet(file);
       const filteredData = jsonData
         .filter((row) => {
           if (withDateRange) {
             const date = parseISO(row.date);
-            console.log("row.date", row.date);
-            console.log("date", date);
             const minCheck = compareAsc(date, startDate);
             const maxCheck = compareDesc(date, endDate);
             return minCheck >= 0 && maxCheck >= 0;
