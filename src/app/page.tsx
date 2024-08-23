@@ -10,6 +10,8 @@ import { processFile } from "./actions";
 import { Form } from "./form";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   const { execute, result, isPending } = useStateAction(processFile);
   const [showPreview, setShowPreview] = useState(true);
