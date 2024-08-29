@@ -1,6 +1,7 @@
 "use server";
 import ExcelJS from "exceljs";
 import { formatISO, compareAsc, compareDesc, parseISO } from "date-fns";
+import { format, toZonedTime } from "date-fns-tz";
 import { z } from "zod";
 import { actionClient } from "@/lib/safe-action";
 import { ParserError } from "@/lib/errors";
@@ -61,9 +62,7 @@ export const processFile = actionClient
         })
         .filter((row) => {
           const time = row.time;
-          return (
-            time >= `${startTime}:00+01:00` && time <= `${endTime}:00+01:00`
-          );
+          return time >= `${startTime}:00` && time <= `${endTime}:00`;
         });
 
       if (filteredData.length === 0) return [];
@@ -208,7 +207,7 @@ function calculate(data: WeatherData[]) {
   );
 
   const cummlativePrecipitation = data.reduce(
-    (acc, item) => acc + item.precipitation,
+    (acc, item) => acc + item.precipitation || 0,
     0,
   );
 
@@ -240,10 +239,11 @@ function parseDateCell(row: ExcelJS.Row, column: number) {
 }
 
 function parseTimeCell(row: ExcelJS.Row, column: number) {
-  const result = formatISO(row.getCell(column).value as Date, {
-    representation: "time",
-  });
-  return result;
+  return format(
+    toZonedTime(row.getCell(column).value as Date, "UTC"),
+    "HH:mm:ss",
+    { timeZone: "UTC" },
+  );
 }
 
 function formatTime(time: string): string {
