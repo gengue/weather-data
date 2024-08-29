@@ -168,8 +168,8 @@ async function parseSpreadsheet(file: File) {
         time: parseTimeCell(row, 2),
         temperature: parseNumberCell(row, 3),
         humidity: parseNumberCell(row, 4),
-        precipitation: parseNumberCell(row, 5),
-        logger: row.getCell(6).text.trim(),
+        logger: row.getCell(5).text.trim(),
+        precipitation: parseNumberCell(row, 6),
         saturationDeficit: parseNumberCell(row, 7),
       };
       jsonData.push(rowData);
@@ -207,7 +207,7 @@ function calculate(data: WeatherData[]) {
   );
 
   const cummlativePrecipitation = data.reduce(
-    (acc, item) => acc + item.precipitation || 0,
+    (acc, item) => acc + item.precipitation,
     0,
   );
 
@@ -228,13 +228,18 @@ function calculate(data: WeatherData[]) {
 }
 
 function parseNumberCell(row: ExcelJS.Row, column: number) {
-  return parseFloat(row.getCell(column).text.trim().replace(",", "."));
+  if (typeof row.getCell(column).value !== "number") {
+    return 0;
+  }
+  return row.getCell(column).value as number;
 }
 
 function parseDateCell(row: ExcelJS.Row, column: number) {
-  const result = formatISO(row.getCell(column).value as Date, {
-    representation: "date",
-  });
+  const result = format(
+    toZonedTime(row.getCell(column).value as Date, "UTC"),
+    "yyyy-MM-dd",
+    { timeZone: "UTC" },
+  );
   return result;
 }
 
